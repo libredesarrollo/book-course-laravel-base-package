@@ -1,6 +1,6 @@
-#  Curso y Libro – Laravel Base 12 - Paquetes Varios
+#  Curso y Libro – Laravel Base 13 - Paquetes Varios
 
-Este repositorio acompaña al curso y libro **"Primeros Pasos con Laravel 12"** (Edición 2025) de Andrés Cruz (DesarrolloLibre).
+Este repositorio acompaña al curso y libro **"Primeros Pasos con Laravel 13"** (Edición 2025) de Andrés Cruz (DesarrolloLibre).
 
 https://www.desarrollolibre.net/blog/laravel/curso-laravel
 
@@ -11,7 +11,7 @@ https://www.desarrollolibre.net/libros/getting-started-with-laravel
 
 ##  Detalles del Curso
 
-El curso y libro están diseñados para desarrollar una base sólida en Laravel 12 desde cero. Está pensado para quienes ya tienen conocimientos básicos en PHP y desean crear aplicaciones web siguiendo buenas prácticas. Ofrece explicaciones prácticas paso a paso, desde los fundamentos hasta la construcción de aplicaciones dinámicas y modernas.
+El curso y libro están diseñados para desarrollar una base sólida en Laravel 13 desde cero. Está pensado para quienes ya tienen conocimientos básicos en PHP y desean crear aplicaciones web siguiendo buenas prácticas. Ofrece explicaciones prácticas paso a paso, desde los fundamentos hasta la construcción de aplicaciones dinámicas y modernas.
 
 ---
 
