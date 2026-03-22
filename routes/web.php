@@ -1,9 +1,12 @@
 <?php
 
+use App\Http\Controllers\PaymentPaypalController;
 use Illuminate\Support\Facades\Route;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
-use App\Http\Controllers\PaymentPaypalController;
+Route::get('/', function () {
+    return view('welcome');
+});
 
 Route::get('/', function () {
     dd(isMobile());

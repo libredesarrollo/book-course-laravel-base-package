@@ -56,18 +56,12 @@ Laragon o Laravel Herd o en MacOS Laravel Herd y MacOS y Linux con Laravel Sail 
 
 ##  Requisitos
 
-- PHP 8.1 o superior  
+- PHP 8.4 o superior  
 - Composer  
 - Node.js y npm (para frontend y compilación de assets)  
-- Laravel 12 
+- Laravel 13 
 - Opcional: Livewire, Alpine.js, Laravel Breeze  
 
 ---
 
-##  Instalación
 
-1. Clona este repositorio:
-
-   ```bash
-   git clone https://github.com/libredesarrollo/book-course-laravel-base-11.git
-   cd book-course-laravel-base-11
