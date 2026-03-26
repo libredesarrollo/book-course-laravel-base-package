@@ -8,7 +8,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/', function () {
+Route::get('/is-mobile', function () {
     dd(isMobile());
     return view('welcome');
 });
