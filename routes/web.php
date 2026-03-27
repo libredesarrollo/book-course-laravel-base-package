@@ -1,7 +1,9 @@
 <?php
 
+use App\Exports\PostsExport;
 use App\Http\Controllers\PaymentPaypalController;
 use Illuminate\Support\Facades\Route;
+use Maatwebsite\Excel\Facades\Excel;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 Route::get('/', function () {
@@ -12,6 +14,13 @@ Route::get('/is-mobile', function () {
     dd(isMobile());
     return view('welcome');
 });
+Route::get('/export-excel', function () {
+
+    return Excel::download(new PostsExport, 'posts.xlsx');
+
+});
+
+
 
 Route::get('/qr', function () {
     //QrCode::format('png')->generate('DesarrolloLibre');
