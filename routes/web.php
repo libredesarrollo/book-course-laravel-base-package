@@ -15,9 +15,7 @@ Route::get('/is-mobile', function () {
     return view('welcome');
 });
 Route::get('/export-excel', function () {
-
     return Excel::download(new PostsExport, 'posts.xlsx');
-
 });
 
 
