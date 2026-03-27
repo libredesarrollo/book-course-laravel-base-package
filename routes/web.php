@@ -14,7 +14,10 @@ Route::get('/is-mobile', function () {
 });
 
 Route::get('/qr', function () {
-    QrCode::format('png')->generate('DesarrolloLibre');
+    //QrCode::format('png')->generate('DesarrolloLibre');
+    QrCode::format('png')->size(700)->color(255, 0, 0)
+    // ->merge('/assets/img/logo.png', .3, true)
+    ->generate('Desarrollo libre Andres', '../public/qrcode.png');
     return view('welcome');
 });
 
