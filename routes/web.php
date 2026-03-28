@@ -3,8 +3,11 @@
 use App\Exports\PostsExport;
 use App\Http\Controllers\PaymentPaypalController;
 use Illuminate\Support\Facades\Route;
+use Laravel\Ai\Enums\Lab;
 use Maatwebsite\Excel\Facades\Excel;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
+use function Laravel\Ai\agent;
 
 Route::get('/', function () {
     return view('welcome');
@@ -16,6 +19,16 @@ Route::get('/is-mobile', function () {
 });
 Route::get('/export-excel', function () {
     return Excel::download(new PostsExport, 'posts.xlsx');
+});
+Route::get('/laravel-ia-text', function () {
+
+    $response = agent(
+        instructions: 'Eres un asistente experto en Laravel.',)->prompt(
+        'Genera una lista de 3 temas de Laravel 13 en formato JSON',
+        provider: Lab::Gemini,
+        model: 'gemini-2.0-flash',);
+    
+    dd($response);
 });
 
 
