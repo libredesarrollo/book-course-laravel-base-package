@@ -106,7 +106,7 @@ return [
         ],
 
         'openai' => [
-            'driver' => 'openai',
+            'driver' => 'deepseek', // Para usar modelos en local (Esto forzará al SDK a usar el puente de Prism, que es compatible con el estándar de Jan IA, manteniendo el resto de tu configuración.)
             'key' => env('OPENAI_API_KEY'),
             'url' => env('OPENAI_URL', 'https://api.openai.com/v1'),
         ],
