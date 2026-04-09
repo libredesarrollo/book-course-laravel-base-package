@@ -1,13 +1,11 @@
 <?php
 
 use App\Exports\PostsExport;
+use App\Http\Controllers\AgentsTestController;
 use App\Http\Controllers\PaymentPaypalController;
 use Illuminate\Support\Facades\Route;
-use Laravel\Ai\Enums\Lab;
 use Maatwebsite\Excel\Facades\Excel;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-
-use Laravel\AI;
 
 use function Laravel\Ai\agent;
 
@@ -17,6 +15,7 @@ Route::get('/', function () {
 
 Route::get('/is-mobile', function () {
     dd(isMobile());
+
     return view('welcome');
 });
 Route::get('/export-excel', function () {
@@ -33,7 +32,7 @@ Route::get('/laravel-ia-text', function () {
         instructions: 'Eres un asistente experto en Laravel.',
     )->prompt(
             'Genera una lista de 3 temas de Laravel 13 en formato JSON',
-            //provider: 'openai', // ESTO ES VITAL
+            // provider: 'openai', // ESTO ES VITAL
             model: 'gemma-3-12b-it-IQ4_XS'
         );
 
@@ -55,24 +54,56 @@ Route::get('/laravel-ia-text2', function () {
             );
 
         dd($response);
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         // Esto nos dirá qué está pasando realmente si falla
         return response()->json([
             'message' => $e->getMessage(),
-            'check_jan' => 'Asegúrate de que el servidor en Jan.ia esté en "Started"'
+            'check_jan' => 'Asegúrate de que el servidor en Jan.ia esté en "Started"',
         ], 500);
     }
 });
 
-
-
 Route::get('/qr', function () {
-    //QrCode::format('png')->generate('DesarrolloLibre');
+    // QrCode::format('png')->generate('DesarrolloLibre');
     QrCode::format('png')->size(700)->color(255, 0, 0)
         // ->merge('/assets/img/logo.png', .3, true)
         ->generate('Desarrollo libre Andres', '../public/qrcode.png');
+
     return view('welcome');
 });
 
 Route::get('/paypal', [PaymentPaypalController::class, 'paypal']);
 Route::post('/paypal-process-order/{order}', [PaymentPaypalController::class, 'paypalProcessOrder']);
+
+/*
+|--------------------------------------------------------------------------
+| Rutas de Gemma 3 con IA Local (Ollama)
+|--------------------------------------------------------------------------
+|
+| Ejemplos de uso del modelo Gemma 3 corriendo localmente via Ollama.
+|
+| Requisitos:
+| - Tener Ollama instalado (https://ollama.com)
+| - Descargar modelo: ollama pull gemma3:12b
+| - Ejecutar Ollama: ollama serve
+| - O usar Jan.ai para interfaz gráfica
+|
+*/
+
+// Chat básico con Gemma 3
+Route::get('/agents/chat', [AgentsTestController::class, 'chat']);
+
+// Generación de código con agents 3
+Route::get('/agents/generar-codigo', [AgentsTestController::class, 'generarCodigo']);
+
+// Streaming de respuestas (demo)
+Route::get('/agents/streaming', [AgentsTestController::class, 'streaming']);
+
+// Análisis de sentimientos
+Route::get('/agents/analizar', [AgentsTestController::class, 'analizar']);
+
+// Fallback entre proveedores
+Route::get('/agents/fallback', [AgentsTestController::class, 'conFallback']);
+
+// Structured Output: Lista de Pokemon con PokemonAgent
+Route::get('/agents/pokemon-lista', [AgentsTestController::class, 'listaPokemones']);

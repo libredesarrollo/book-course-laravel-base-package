@@ -1,14 +1,16 @@
 <?php
 
+use Detection\Exception\MobileDetectException;
 use Detection\MobileDetect;
 
 function isMobile()
 {
-    $detect = new MobileDetect();
+    $detect = new MobileDetect;
     // var_dump($detect->getUserAgent());
     try {
         return $detect->isMobile();
-    } catch (\Detection\Exception\MobileDetectException $th) {
+    } catch (MobileDetectException $th) {
     }
+
     return false;
 }

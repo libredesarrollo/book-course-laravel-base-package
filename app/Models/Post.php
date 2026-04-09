@@ -9,10 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 // #[With(['category'])]
 class Post extends Model
 {
-    use HasFactory; 
+    use HasFactory;
 
-    protected $fillable = ['title', 'slug', 'content', 'category_id', 'description', 'posted', 'image','user_id'];
-
-
-
+    protected $fillable = ['title', 'slug', 'content', 'category_id', 'description', 'posted', 'image', 'user_id'];
 }

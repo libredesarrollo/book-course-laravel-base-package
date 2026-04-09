@@ -15,8 +15,8 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
     // PayPal
-    'paypal_id' => env('PAYPAL_CLIENT_ID', "<YOUR_PRO_PAYPAL_CLIENT_ID>"),
-    'paypal_secrect' => env('PAYPAL_SECRET',"<YOUR_PRO_PAYPAL_SECRET>"),
+    'paypal_id' => env('PAYPAL_CLIENT_ID', '<YOUR_PRO_PAYPAL_CLIENT_ID>'),
+    'paypal_secrect' => env('PAYPAL_SECRET', '<YOUR_PRO_PAYPAL_SECRET>'),
 
     /*
     |--------------------------------------------------------------------------

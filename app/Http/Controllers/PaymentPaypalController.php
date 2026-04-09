@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 class PaymentPaypalController extends Controller
 {
     private $clientId;
+
     private $secret;
 
     private $baseURL = 'https://api-m.paypal.com';
@@ -27,18 +28,18 @@ class PaymentPaypalController extends Controller
         return view('paypal');
     }
 
-    function paypalProcessOrder(string $order)
+    public function paypalProcessOrder(string $order)
     {
         // dd($order);
         $accessToken = $this->getAccessToken();
 
         $response = Http::acceptJson()->withToken($accessToken)->withHeaders([
-            'Content-Type' => 'application/json'
-        ])->post($this->baseURL . "/v2/checkout/orders/$order/capture", [
+            'Content-Type' => 'application/json',
+        ])->post($this->baseURL."/v2/checkout/orders/$order/capture", [
             'application_context' => [
                 'return_url' => 'http://larafirstepspackages.test/paypal',
                 'cancel_url' => 'http://larafirstepspackages.test/paypal',
-            ]
+            ],
         ])->json();
 
         dd($response);
@@ -48,11 +49,12 @@ class PaymentPaypalController extends Controller
     {
         $response = Http::asForm()->withHeaders([
             'Accept' => 'application/json',
-            'Content-Type' => 'application/x-www-form-urlencoded'
+            'Content-Type' => 'application/x-www-form-urlencoded',
         ])->withBasicAuth($this->clientId, $this->secret)
-            ->post($this->baseURL . '/v1/oauth2/token', [
-                'grant_type' => 'client_credentials'
+            ->post($this->baseURL.'/v1/oauth2/token', [
+                'grant_type' => 'client_credentials',
             ])->json();
+
         return $response['access_token'];
     }
 }
