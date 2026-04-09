@@ -30,16 +30,17 @@ Route::get('/laravel-ia-text', function () {
     //     provider: Lab::Gemini,
     //     model: 'gemini-2.0-flash',);
     $response = agent(
-        instructions: 'Eres un asistente experto en Laravel.',)->prompt(
-        'Genera una lista de 3 temas de Laravel 13 en formato JSON',
-         provider: 'openai', // ESTO ES VITAL
-         model: 'gemma-3-12b-it-IQ4_XS'
+        instructions: 'Eres un asistente experto en Laravel.',
+    )->prompt(
+            'Genera una lista de 3 temas de Laravel 13 en formato JSON',
+            //provider: 'openai', // ESTO ES VITAL
+            model: 'gemma-3-12b-it-IQ4_XS'
         );
 
     // $response = AI::chat('Explícame qué es un Repository Pattern en Laravel')
     // ->model('llama3') // El nombre del modelo que tengas en local
     // ->send();
-    
+
     dd($response);
 });
 
@@ -48,10 +49,10 @@ Route::get('/laravel-ia-text2', function () {
         $response = agent(
             instructions: 'Eres un asistente experto en Laravel.',
         )->prompt(
-            'Genera una lista de 3 temas de Laravel 13 en formato JSON',
-            provider: 'openai',
-            model: 'gemma-3-12b-it-IQ4_XS' // Copiado exactamente de tu JSON
-        );
+                'Genera una lista de 3 temas de Laravel 13 en formato JSON',
+                provider: 'openai',
+                model: 'gemma-3-12b-it-IQ4_XS' // Copiado exactamente de tu JSON
+            );
 
         dd($response);
     } catch (\Exception $e) {
@@ -68,8 +69,8 @@ Route::get('/laravel-ia-text2', function () {
 Route::get('/qr', function () {
     //QrCode::format('png')->generate('DesarrolloLibre');
     QrCode::format('png')->size(700)->color(255, 0, 0)
-    // ->merge('/assets/img/logo.png', .3, true)
-    ->generate('Desarrollo libre Andres', '../public/qrcode.png');
+        // ->merge('/assets/img/logo.png', .3, true)
+        ->generate('Desarrollo libre Andres', '../public/qrcode.png');
     return view('welcome');
 });
 
