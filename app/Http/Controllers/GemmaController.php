@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Ai\Agents\PokemonAgent;
 use App\Ai\Agents\QuizAgent;
-use App\Ai\Agents\QuizGenerator;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,7 +14,7 @@ use function Laravel\Ai\agent;
 /**
  * Controlador para ejemplos de uso de Gemma 3 con IA local (Ollama).
  */
-class AgentsTestController extends Controller
+class GemmaController extends Controller
 {
     /**
      * Chat básico con Gemma 3
@@ -27,9 +26,9 @@ class AgentsTestController extends Controller
         $response = agent(
             instructions: 'Eres un asistente útil y conciso.',
         )->prompt(
-                $mensaje,
-                model: 'gemma-3-12b-it-IQ4_XS'
-            );
+            $mensaje,
+            model: 'gemma-3-12b-it-IQ4_XS'
+        );
 
         return response()->json([
             'respuesta' => $response->text,
@@ -47,9 +46,9 @@ class AgentsTestController extends Controller
         $response = agent(
             instructions: 'Eres un experto en Laravel. Generas código limpio y sigues las mejores prácticas.',
         )->prompt(
-                "Genera {$tipo} en Laravel 13. Solo dame el código, sin explicaciones.",
-                model: 'gemma-3-12b-it-IQ4_XS'
-            );
+            "Genera {$tipo} en Laravel 13. Solo dame el código, sin explicaciones.",
+            model: 'gemma-3-12b-it-IQ4_XS'
+        );
 
         return response()->json([
             'codigo' => $response->text,
@@ -67,9 +66,9 @@ class AgentsTestController extends Controller
         $response = agent(
             instructions: 'Eres un analizador de sentimientos. Respondes solo con positivo, negativo o neutro.',
         )->prompt(
-                "Clasifica el siguiente texto: {$texto}",
-                model: 'gemma-3-12b-it-IQ4_XS'
-            );
+            "Clasifica el siguiente texto: {$texto}",
+            model: 'gemma-3-12b-it-IQ4_XS'
+        );
 
         return response()->json([
             'sentimiento' => trim($response->text),
@@ -87,10 +86,10 @@ class AgentsTestController extends Controller
         $response = agent(
             instructions: 'Eres un asistente conciso.',
         )->prompt(
-                $pregunta,
-                provider: [Lab::Ollama, Lab::OpenAI],
-                model: 'gemma-3-12b-it-IQ4_XS'
-            );
+            $pregunta,
+            provider: [Lab::Ollama, Lab::OpenAI],
+            model: 'gemma-3-12b-it-IQ4_XS'
+        );
 
         return response()->json([
             'respuesta' => $response->text,
@@ -125,61 +124,24 @@ class AgentsTestController extends Controller
     /**
      * Quiz Verdadero/Falso basado en Posts
      *
-     * Forma "pro": inyectar contenido al agente via withContext()
-     *
-     * Parámetros:
-     * - ids: (opcional) IDs separados por coma ej "?ids=1,2,3"
-     * - cantidad: (opcional) número de preguntas ej "?cantidad=5"
+     * El agente lee los posts y genera preguntas de quiz.
      */
     public function quizPosts(Request $request): JsonResponse
     {
-        $ids = $request->input('ids');
-        $cantidad = $request->input('cantidad', 5);
-
-        $posts = Post::when($ids, fn($query) => $query->whereIn('id', array_filter(explode(',', $ids))), fn($query) => $query->where('posted', 'yes')->limit(1))
+        $posts = Post::where('posted', 'si')
+            ->limit(5)
             ->get(['title', 'content']);
 
         if ($posts->isEmpty()) {
-            return response()->json(['error' => 'No hay contenido'], 404);
+            return response()->json([
+                'error' => 'No hay posts disponibles para generar el quiz',
+            ], 404);
         }
 
-        // Instanciamos, pasamos el contexto y ejecutamos
-        $resultado = (new QuizGenerator)
-            ->withContext($posts)
-            ->prompt(
-                "Genera {$cantidad} preguntas de verdadero o falso sobre el material proporcionado.",
-                model: 'gemma-3-12b-it-IQ4_XS'
-            );
-
-        return response()->json([
-            'quiz' => $resultado->toArray(),
-            'posts_utilizados' => $posts->count(),
-        ]);
-    }
-
-    /**
-     * Quiz con QuizAgent (versión simple)
-     *
-     * El contenido se pasa directamente en el prompt.
-     */
-    public function quizPostsSimple(Request $request): JsonResponse
-    {
-        $ids = $request->input('ids');
-        $cantidad = $request->input('cantidad', 5);
-
-        $posts = Post::when($ids, fn($query) => $query->whereIn('id', array_filter(explode(',', $ids))), fn($query) => $query->where('posted', 'yes')->limit(1))
-            ->get(['title', 'content']);
-
-        if ($posts->isEmpty()) {
-            return response()->json(['error' => 'No hay contenido'], 404);
-        }
-
-        $contenido = $posts->map(fn($post) => "Título: {$post->title}\nContenido: {$post->content}")->join("\n\n---\n\n");
-
-        $prompt = "Basándote en los siguientes posts, genera {$cantidad} preguntas de verdadero o falso:\n\n{$contenido}";
+        $contenido = $posts->map(fn ($post) => "Título: {$post->title}\nContenido: {$post->content}")->join("\n\n---\n\n");
 
         $resultado = (new QuizAgent)->prompt(
-            $prompt,
+            "Basándote en los siguientes posts, genera 5 preguntas de verdadeiro o falso:\n\n{$contenido}",
             model: 'gemma-3-12b-it-IQ4_XS'
         );
 

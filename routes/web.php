@@ -31,10 +31,10 @@ Route::get('/laravel-ia-text', function () {
     $response = agent(
         instructions: 'Eres un asistente experto en Laravel.',
     )->prompt(
-            'Genera una lista de 3 temas de Laravel 13 en formato JSON',
-            // provider: 'openai', // ESTO ES VITAL
-            model: 'gemma-3-12b-it-IQ4_XS'
-        );
+        'Genera una lista de 3 temas de Laravel 13 en formato JSON',
+        // provider: 'openai', // ESTO ES VITAL
+        model: 'gemma-3-12b-it-IQ4_XS'
+    );
 
     // $response = AI::chat('Explícame qué es un Repository Pattern en Laravel')
     // ->model('llama3') // El nombre del modelo que tengas en local
@@ -48,10 +48,10 @@ Route::get('/laravel-ia-text2', function () {
         $response = agent(
             instructions: 'Eres un asistente experto en Laravel.',
         )->prompt(
-                'Genera una lista de 3 temas de Laravel 13 en formato JSON',
-                provider: 'openai',
-                model: 'gemma-3-12b-it-IQ4_XS' // Copiado exactamente de tu JSON
-            );
+            'Genera una lista de 3 temas de Laravel 13 en formato JSON',
+            provider: 'openai',
+            model: 'gemma-3-12b-it-IQ4_XS' // Copiado exactamente de tu JSON
+        );
 
         dd($response);
     } catch (Exception $e) {
@@ -107,3 +107,9 @@ Route::get('/agents/fallback', [AgentsTestController::class, 'conFallback']);
 
 // Structured Output: Lista de Pokemon con PokemonAgent
 Route::get('/agents/pokemon-lista', [AgentsTestController::class, 'listaPokemones']);
+
+// Quiz Verdadero/Falso basado en Posts (versión pro con withContext)
+Route::get('/agents/quiz-posts', [AgentsTestController::class, 'quizPosts']);
+
+// Quiz Verdadero/Falso basado en Posts (versión simple con prompt)
+Route::get('/agents/quiz-simple', [AgentsTestController::class, 'quizPostsSimple']);
