@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Ai\Agents\PokemonAgent;
 use App\Ai\Agents\QuizAgent;
 use App\Ai\Agents\QuizGenerator;
+use App\Ai\Agents\SalesCoach;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ use function Laravel\Ai\agent;
 class AgentsTestController extends Controller
 {
     /**
-     * Chat básico con Gemma 3
+     * Chat básico
      */
     public function chat(Request $request): JsonResponse
     {
@@ -28,7 +29,8 @@ class AgentsTestController extends Controller
             instructions: 'Eres un asistente útil y conciso.',
         )->prompt(
                 $mensaje,
-                model: 'gemma-3-12b-it-IQ4_XS'
+                // model: 'gemma-3-12b-it-IQ4_XS'
+                model: 'openai/gpt-oss-20b'
             );
 
         return response()->json([
@@ -38,7 +40,7 @@ class AgentsTestController extends Controller
     }
 
     /**
-     * Generación de código con Gemma 3
+     * Generación de código
      */
     public function generarCodigo(Request $request): JsonResponse
     {
@@ -48,7 +50,8 @@ class AgentsTestController extends Controller
             instructions: 'Eres un experto en Laravel. Generas código limpio y sigues las mejores prácticas.',
         )->prompt(
                 "Genera {$tipo} en Laravel 13. Solo dame el código, sin explicaciones.",
-                model: 'gemma-3-12b-it-IQ4_XS'
+                // model: 'gemma-3-12b-it-IQ4_XS'
+                model: 'openai/gpt-oss-20b'
             );
 
         return response()->json([
@@ -58,7 +61,7 @@ class AgentsTestController extends Controller
     }
 
     /**
-     * Análisis de texto con Gemma 3
+     * Análisis de texto
      */
     public function analizar(Request $request): JsonResponse
     {
@@ -68,7 +71,8 @@ class AgentsTestController extends Controller
             instructions: 'Eres un analizador de sentimientos. Respondes solo con positivo, negativo o neutro.',
         )->prompt(
                 "Clasifica el siguiente texto: {$texto}",
-                model: 'gemma-3-12b-it-IQ4_XS'
+                // model: 'gemma-3-12b-it-IQ4_XS'
+                model: 'openai/gpt-oss-20b'
             );
 
         return response()->json([
@@ -89,7 +93,8 @@ class AgentsTestController extends Controller
         )->prompt(
                 $pregunta,
                 provider: [Lab::Ollama, Lab::OpenAI],
-                model: 'gemma-3-12b-it-IQ4_XS'
+                // model: 'gemma-3-12b-it-IQ4_XS'
+                model: 'openai/gpt-oss-20b'
             );
 
         return response()->json([
@@ -105,9 +110,13 @@ class AgentsTestController extends Controller
     {
         $resultado = (new PokemonAgent)->prompt(
             'Genera una lista de 3 Pokemon diferentes',
-            model: 'gemma-3-12b-it-IQ4_XS'
+            // model: 'gemma-3-12b-it-IQ4_XS'
+            // model: 'qwen3.5-27b'
+            // model: 'text-embedding-nomic-embed-text-v1.5',
+            model: 'Qwen3-4B-Instruct-2507-IQ4_XS',
+            timeout: 120
         );
-
+        // dd($resultado);
         return response()->json([
             'resultado' => $resultado->toArray(),
             'esquema' => [
@@ -148,7 +157,8 @@ class AgentsTestController extends Controller
             ->withContext($posts)
             ->prompt(
                 "Genera {$cantidad} preguntas de verdadero o falso sobre el material proporcionado.",
-                model: 'gemma-3-12b-it-IQ4_XS'
+                // model: 'gemma-3-12b-it-IQ4_XS'
+                model: 'openai/gpt-oss-20b'
             );
 
         return response()->json([
@@ -180,12 +190,21 @@ class AgentsTestController extends Controller
 
         $resultado = (new QuizAgent)->prompt(
             $prompt,
-            model: 'gemma-3-12b-it-IQ4_XS'
+            // model: 'gemma-3-12b-it-IQ4_XS'
+            model: 'openai/gpt-oss-20b'
         );
 
         return response()->json([
             'quiz' => $resultado->toArray(),
             'posts_utilizados' => $posts->count(),
         ]);
+    }
+
+    function salesCoach() {
+        $response = (new SalesCoach)
+        ->prompt('Analyze this sales transcript...',
+        model: 'Qwen3-4B-Instruct-2507-IQ4_XS');
+ 
+        return (string) $response;
     }
 }

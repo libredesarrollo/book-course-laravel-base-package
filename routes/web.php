@@ -90,23 +90,29 @@ Route::post('/paypal-process-order/{order}', [PaymentPaypalController::class, 'p
 |
 */
 
-// Chat básico con Gemma 3
+/*** AGENTES Anonimos */
+
+// Chat básico
 Route::get('/agents/chat', [AgentsTestController::class, 'chat']);
 
-// Generación de código con agents 3
+// Generación de código
 Route::get('/agents/generar-codigo', [AgentsTestController::class, 'generarCodigo']);
-
-// Streaming de respuestas (demo)
-Route::get('/agents/streaming', [AgentsTestController::class, 'streaming']);
 
 // Análisis de sentimientos
 Route::get('/agents/analizar', [AgentsTestController::class, 'analizar']);
 
+// Streaming de respuestas (demo)
+Route::get('/agents/streaming', [AgentsTestController::class, 'streaming']);
+
 // Fallback entre proveedores
 Route::get('/agents/fallback', [AgentsTestController::class, 'conFallback']);
 
+
+/*** AGENTES */
 // Structured Output: Lista de Pokemon con PokemonAgent
 Route::get('/agents/pokemon-lista', [AgentsTestController::class, 'listaPokemones']);
+
+Route::get('/agents/sales-coach', [AgentsTestController::class, 'salesCoach']);
 
 // Quiz Verdadero/Falso basado en Posts (versión pro con withContext)
 Route::get('/agents/quiz-posts', [AgentsTestController::class, 'quizPosts']);

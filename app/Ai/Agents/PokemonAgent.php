@@ -28,6 +28,17 @@ class PokemonAgent implements Agent, HasStructuredOutput
         return 'Eres un experto en Pokemon. Generas listas de Pokemon realistas en formato JSON exacto.';
     }
 
+    // public function schema(JsonSchema $schema): array
+    // {
+    //     return [
+    //         'pokemones' => $schema->array()->items(
+    //             $schema->object([
+    //                 'nombre' => $schema->string()->required(),
+                    
+    //             ])
+    //         )->required(),
+    //     ];
+    // }
     public function schema(JsonSchema $schema): array
     {
         return [
