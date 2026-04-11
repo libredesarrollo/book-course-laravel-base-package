@@ -174,7 +174,7 @@ class AgentsTestController extends Controller
      */
     public function quizPostsSimple(Request $request): JsonResponse
     {
-        $ids = $request->input('ids');
+        $ids = $request->input('ids'); // 1,2,3
         $cantidad = $request->input('cantidad', 5);
 
         $posts = Post::when($ids, fn($query) => $query->whereIn('id', array_filter(explode(',', $ids))), fn($query) => $query->where('posted', 'yes')->limit(1))
@@ -183,15 +183,16 @@ class AgentsTestController extends Controller
         if ($posts->isEmpty()) {
             return response()->json(['error' => 'No hay contenido'], 404);
         }
-
+        // dd( $posts);
         $contenido = $posts->map(fn($post) => "Título: {$post->title}\nContenido: {$post->content}")->join("\n\n---\n\n");
 
         $prompt = "Basándote en los siguientes posts, genera {$cantidad} preguntas de verdadero o falso:\n\n{$contenido}";
 
         $resultado = (new QuizAgent)->prompt(
             $prompt,
-            // model: 'gemma-3-12b-it-IQ4_XS'
-            model: 'openai/gpt-oss-20b'
+            model: 'gemma-3-12b-it-IQ4_XS'
+            // model: 'openai/gpt-oss-20b'
+            // model: 'Qwen3-4B-Instruct-2507-IQ4_XS',
         );
 
         return response()->json([
@@ -207,4 +208,5 @@ class AgentsTestController extends Controller
  
         return (string) $response;
     }
+    
 }
