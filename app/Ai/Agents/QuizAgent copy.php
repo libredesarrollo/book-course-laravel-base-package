@@ -17,6 +17,11 @@ use Stringable;
  *   - respuesta: boolean (true = verdadero, false = falso)
  *   - explicacion: string
  */
+// #[ProviderAttr(Provider::Anthropic)] // O Lab::Google si usas Gemini
+// #[Model('claude-3-5-sonnet-20240620')]
+// #[MaxTokens(2000)]
+// #[Temperature(0.7)]
+
 class QuizAgent implements Agent, HasStructuredOutput
 {
     use Promptable;

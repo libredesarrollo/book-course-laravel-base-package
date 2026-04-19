@@ -8,6 +8,14 @@ use Laravel\Ai\Contracts\HasStructuredOutput;
 use Laravel\Ai\Promptable;
 use Stringable;
 
+use Laravel\Ai\Attributes\MaxSteps;
+use Laravel\Ai\Attributes\MaxTokens;
+use Laravel\Ai\Attributes\Model;
+use Laravel\Ai\Attributes\Provider;
+use Laravel\Ai\Attributes\Temperature;
+use Laravel\Ai\Attributes\Timeout;
+
+
 /**
  * Agente para generar quiz de Verdadero/Falso basado en posts.
  *
@@ -17,6 +25,7 @@ use Stringable;
  *   - respuesta: boolean (true = verdadero, false = falso)
  *   - explicacion: string
  */
+#[Timeout(30)]
 class QuizAgent implements Agent, HasStructuredOutput
 {
     use Promptable;

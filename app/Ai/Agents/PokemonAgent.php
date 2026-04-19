@@ -12,7 +12,7 @@ use Stringable;
  * Agente para generar lista de Pokemon con schema estructurado.
  *
  * Schema devuelto:
- * - pokemones: array de objetos
+ *   - pokemones: array de objetos
  *   - nombre: string
  *   - tipo: enum (fuego, agua, electrico, planta, normal, volador, psiquico)
  *   - tamano: integer (10-500 cm)

@@ -13,9 +13,11 @@ use Laravel\Ai\Enums\Lab;
 
 use function Laravel\Ai\agent;
 
+
 /**
  * Controlador para ejemplos de uso de Gemma 3 con IA local (Ollama).
  */
+
 class AgentsTestController extends Controller
 {
     /**
