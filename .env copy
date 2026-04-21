@@ -1,6 +1,5 @@
 APP_NAME=Laravel
 APP_ENV=local
-APP_KEY=base64:Lz1Tnze3OoyfRyhHx7ujSb5gCoNJSFC4tOEEOcqSBwo=
 APP_DEBUG=true
 APP_URL=http://localhost
 
@@ -67,7 +66,6 @@ VITE_APP_NAME="${APP_NAME}"
 PAYPAL_CLIENT_ID="<YOUR_DEV_PAYPAL_CLIENT_ID>"
 PAYPAL_SECRET="<YOUR_DEV_PAYPAL_SECRET>"
 
-# GEMINI_API_KEY=AIzaSyCyHCGYppfV9LoQnt7JdvtG6oBXYKLX5uE
 
 # Usamos el driver de OpenAI como puente
 # AI_DISK=openai 
