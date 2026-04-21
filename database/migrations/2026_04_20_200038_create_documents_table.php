@@ -17,7 +17,8 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('content');
-            $table->vector('embedding', dimensions: 1536)->index();
+            // $table->vector('embedding', dimensions: 1536)->index(); // OPEN IA
+            $table->vector('embedding', dimensions: 768)->index(); // OPEN IA
             $table->timestamps();
         });
     }

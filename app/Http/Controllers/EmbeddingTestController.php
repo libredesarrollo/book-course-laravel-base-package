@@ -11,6 +11,9 @@ use Laravel\Ai\Embeddings;
 
 class EmbeddingTestController extends Controller
 {
+
+ 
+
     /**
      * Genera embeddings usando PHP AI SDK (enfoque portable - funciona con cualquier provider)
      */

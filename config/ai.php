@@ -17,7 +17,7 @@ return [
     'default_for_images' => 'gemini',
     'default_for_audio' => 'openai',
     'default_for_transcription' => 'openai',
-    'default_for_embeddings' => 'openai',
+    'default_for_embeddings' => 'ollama',
     'default_for_reranking' => 'cohere',
 
     /*
@@ -103,6 +103,7 @@ return [
             'driver' => 'ollama',
             'key' => env('OLLAMA_API_KEY', ''),
             'url' => env('OLLAMA_BASE_URL', 'http://localhost:11434'),
+            'model' => 'nomic-embed-text',
         ],
 
         'openai' => [
