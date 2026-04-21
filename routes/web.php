@@ -2,6 +2,7 @@
 
 use App\Exports\PostsExport;
 use App\Http\Controllers\AgentsTestController;
+use App\Http\Controllers\EmbeddingTestController;
 use App\Http\Controllers\PaymentPaypalController;
 use Illuminate\Support\Facades\Route;
 use Maatwebsite\Excel\Facades\Excel;
@@ -107,7 +108,6 @@ Route::get('/agents/streaming', [AgentsTestController::class, 'streaming']);
 // Fallback entre proveedores
 Route::get('/agents/fallback', [AgentsTestController::class, 'conFallback']);
 
-
 /*** AGENTES */
 // Structured Output: Lista de Pokemon con PokemonAgent
 Route::get('/agents/pokemon-lista', [AgentsTestController::class, 'listaPokemones']);
@@ -119,3 +119,17 @@ Route::get('/agents/quiz-posts', [AgentsTestController::class, 'quizPosts']);
 
 // Quiz Verdadero/Falso basado en Posts (versión simple con prompt)
 Route::get('/agents/quiz-simple', [AgentsTestController::class, 'quizPostsSimple']);
+
+/*
+|--------------------------------------------------------------------------
+| Embeddings Test Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/embeddings/generate', [EmbeddingTestController::class, 'generateEmbeddings']);
+Route::get('/embeddings/generate-pgvector', [EmbeddingTestController::class, 'generateEmbeddingsPgvector']);
+Route::get('/embeddings/search', [EmbeddingTestController::class, 'search']);
+Route::get('/embeddings/search-with-embedding', [EmbeddingTestController::class, 'searchWithEmbedding']);
+Route::get('/embeddings/test-stringable', [EmbeddingTestController::class, 'testStringable']);
+Route::get('/embeddings/test-cached', [EmbeddingTestController::class, 'testCachedEmbeddings']);
+Route::get('/embeddings/list', [EmbeddingTestController::class, 'listDocuments']);
