@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "966c428571e476df9539bb48410bb173",
+    "content-hash": "f8650d2f4d83579ccf57e0f2451fd72e",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3249,6 +3249,98 @@
                 }
             ],
             "time": "2026-02-16T23:10:27+00:00"
+        },
+        {
+            "name": "omaralalwi/laravel-trash-cleaner",
+            "version": "1.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/omaralalwi/laravel-trash-cleaner.git",
+                "reference": "203ea1d2ce3e21e3326266f80fd9bf00a4af6fc3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/omaralalwi/laravel-trash-cleaner/zipball/203ea1d2ce3e21e3326266f80fd9bf00a4af6fc3",
+                "reference": "203ea1d2ce3e21e3326266f80fd9bf00a4af6fc3",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.4|^8.1|^8.2|^8.3|^8.4"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "LaravelTrashCleaner": "Omaralalwi\\LaravelTrashCleaner\\LaravelTrashCleanerFacade"
+                    },
+                    "providers": [
+                        "Omaralalwi\\LaravelTrashCleaner\\LaravelTrashCleanerServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Omaralalwi\\LaravelTrashCleaner\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "omar alalwi",
+                    "email": "omaralwi2010@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "clean logs and debug files (clockwork , laravel telescope and more)",
+            "homepage": "https://github.com/omaralalwi/laravel-trash-cleaner",
+            "keywords": [
+                "Clockwork",
+                "Disk Space",
+                "Laravel Utilities",
+                "Log Rotation",
+                "PHP Package",
+                "application health",
+                "artisan command",
+                "automated cleanup",
+                "build cleanup",
+                "cache cleaner",
+                "cleanup command",
+                "clear cache",
+                "debug cleanup",
+                "debugbar",
+                "environment optimization",
+                "file cleaner",
+                "frontend build",
+                "laravel",
+                "laravel cleaner",
+                "laravel maintenance",
+                "laravel package",
+                "laravel tool",
+                "laravel-trash-cleaner",
+                "log cleanup",
+                "log files",
+                "npm build",
+                "npm cache",
+                "omaralalwi",
+                "optimize laravel",
+                "pnpm",
+                "pnpm cache",
+                "progress bar",
+                "scheduler",
+                "storage cleanup",
+                "system performance",
+                "telescope",
+                "vite",
+                "yarn"
+            ],
+            "support": {
+                "issues": "https://github.com/omaralalwi/laravel-trash-cleaner/issues",
+                "source": "https://github.com/omaralalwi/laravel-trash-cleaner/tree/v1.0.4"
+            },
+            "time": "2025-06-29T22:09:31+00:00"
         },
         {
             "name": "pgvector/pgvector",
