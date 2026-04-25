@@ -38,26 +38,6 @@ class EmbeddingTestController extends Controller
     }
 
     /**
-     * Genera embeddings usando pgvector generate_embedding() de PostgreSQL (enfoque nativo)
-     */
-    public function generateEmbeddingsPgvector(): JsonResponse
-    {
-        DB::statement("
-            UPDATE documents
-            SET embedding = generate_embedding(content, 'text-embedding-3-small')
-            WHERE embedding IS NULL
-        ");
-
-        $count = Document::whereNotNull('embedding')->count();
-
-        return response()->json([
-            'message' => 'Embeddings generated via PostgreSQL pgvector',
-            'method' => 'pgvector-native',
-            'documents_updated' => $count,
-        ]);
-    }
-
-    /**
      * Búsqueda vectorial similarity (usa el query como string - Laravel genera embedding automáticamente)
      */
     public function search(Request $request): JsonResponse
@@ -81,7 +61,7 @@ class EmbeddingTestController extends Controller
      */
     public function searchWithEmbedding(Request $request): JsonResponse
     {
-        $query = $request->get('q', 'best wineries');
+        $query = $request->get('q', 'best wineries asasas asasasasas asxx');
 
         $queryEmbedding = Str::of($query)->toEmbeddings();
 
@@ -106,6 +86,7 @@ class EmbeddingTestController extends Controller
     public function testStringable(): JsonResponse
     {
         $embedding = Str::of('Napa Valley has great wine.')->toEmbeddings();
+        // $embedding = str('Napa Valley has great wine.')->toEmbeddings();
 
         return response()->json([
             'text' => 'Napa Valley has great wine.',
@@ -121,6 +102,7 @@ class EmbeddingTestController extends Controller
     public function testCachedEmbeddings(): JsonResponse
     {
         $text = 'Laravel is awesome.';
+        $text2 = 'Laravel is awesome.';
 
         // Primera llamada - genera embedding
         $start1 = microtime(true);
@@ -129,7 +111,7 @@ class EmbeddingTestController extends Controller
 
         // Segunda llamada - retorna del cache
         $start2 = microtime(true);
-        $embedding2 = Str::of($text)->toEmbeddings(cache: true);
+        $embedding2 = Str::of($text2)->toEmbeddings(cache: 3600);
         $time2 = microtime(true) - $start2;
 
         return response()->json([

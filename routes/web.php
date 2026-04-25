@@ -125,11 +125,14 @@ Route::get('/agents/quiz-simple', [AgentsTestController::class, 'quizPostsSimple
 | Embeddings Test Routes
 |--------------------------------------------------------------------------
 */
-
+// listado de documentos
+Route::get('/embeddings/list', [EmbeddingTestController::class, 'listDocuments']);
+// generar columna vector
 Route::get('/embeddings/generate', [EmbeddingTestController::class, 'generateEmbeddings']);
-Route::get('/embeddings/generate-pgvector', [EmbeddingTestController::class, 'generateEmbeddingsPgvector']);
+// busqueda por similitud o cercania
 Route::get('/embeddings/search', [EmbeddingTestController::class, 'search']);
 Route::get('/embeddings/search-with-embedding', [EmbeddingTestController::class, 'searchWithEmbedding']);
+// Prueba el helper Str::toEmbeddings() (Stringable)
 Route::get('/embeddings/test-stringable', [EmbeddingTestController::class, 'testStringable']);
+// cache del embedding
 Route::get('/embeddings/test-cached', [EmbeddingTestController::class, 'testCachedEmbeddings']);
-Route::get('/embeddings/list', [EmbeddingTestController::class, 'listDocuments']);
