@@ -34,7 +34,7 @@ class PokemonAgent implements Agent, HasStructuredOutput
     //         'pokemones' => $schema->array()->items(
     //             $schema->object([
     //                 'nombre' => $schema->string()->required(),
-                    
+
     //             ])
     //         )->required(),
     //     ];

@@ -8,13 +8,12 @@ use App\Models\User;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\Conversational;
-use Laravel\Ai\Contracts\HasStructuredOutput;
 use Laravel\Ai\Contracts\HasTools;
 use Laravel\Ai\Messages\Message;
 use Laravel\Ai\Promptable;
 use Stringable;
 
-class SalesCoach implements Agent, HasTools //Conversational
+class SalesCoach implements Agent, HasTools // Conversational
 {
     use Promptable;
 

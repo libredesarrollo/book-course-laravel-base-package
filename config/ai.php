@@ -129,4 +129,22 @@ return [
         ],
     ],
 
+    'stores' => [
+        'default' => env('AI_STORE_DRIVER', 'database'),
+
+        'database' => [
+            'driver' => 'database',
+            'connection' => env('DB_CONNECTION', 'pgsql'),
+            'table' => 'ai_stores',
+            'embedding_driver' => 'ollama', // Aquí vinculas a Ollama como el motor de vectores
+        ],
+        
+        'pinecone' => [
+            'driver' => 'pinecone',
+            'key' => env('PINECONE_API_KEY'),
+            'index' => env('PINECONE_INDEX'),
+            'embedding_driver' => 'ollama',
+        ],
+    ],
+
 ];

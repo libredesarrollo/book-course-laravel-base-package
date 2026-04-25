@@ -4,6 +4,8 @@ use App\Exports\PostsExport;
 use App\Http\Controllers\AgentsTestController;
 use App\Http\Controllers\EmbeddingTestController;
 use App\Http\Controllers\PaymentPaypalController;
+use App\Http\Controllers\RerankingExamplesController;
+use App\Http\Controllers\VectorStoreExamplesController;
 use Illuminate\Support\Facades\Route;
 use Maatwebsite\Excel\Facades\Excel;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -136,3 +138,41 @@ Route::get('/embeddings/search-with-embedding', [EmbeddingTestController::class,
 Route::get('/embeddings/test-stringable', [EmbeddingTestController::class, 'testStringable']);
 // cache del embedding
 Route::get('/embeddings/test-cached', [EmbeddingTestController::class, 'testCachedEmbeddings']);
+
+/*
+|--------------------------------------------------------------------------
+| Reranking Examples Routes
+|--------------------------------------------------------------------------
+*/
+Route::get('/reranking/basic', [RerankingExamplesController::class, 'basicReranking']);
+Route::get('/reranking/with-limit', [RerankingExamplesController::class, 'withLimit']);
+Route::get('/reranking/with-provider', [RerankingExamplesController::class, 'withSpecificProvider']);
+Route::get('/reranking/eloquent', [RerankingExamplesController::class, 'rerankEloquentModels']);
+Route::get('/reranking/multiple-fields', [RerankingExamplesController::class, 'rerankMultipleFields']);
+Route::get('/reranking/with-closure', [RerankingExamplesController::class, 'rerankWithClosure']);
+Route::get('/reranking/hybrid', [RerankingExamplesController::class, 'hybridSearchReranking']);
+Route::get('/reranking/with-metadata', [RerankingExamplesController::class, 'rerankWithMetadata']);
+Route::get('/reranking/filter-by-score', [RerankingExamplesController::class, 'filterByScore']);
+Route::get('/reranking/batch', [RerankingExamplesController::class, 'batchReranking']);
+Route::get('/reranking/pagination', [RerankingExamplesController::class, 'paginationWithReranking']);
+
+/*
+|--------------------------------------------------------------------------
+| Vector Store Examples Routes
+|--------------------------------------------------------------------------
+*/
+Route::get('/vector-store/create', [VectorStoreExamplesController::class, 'createBasicStore']);
+Route::get('/vector-store/create-options', [VectorStoreExamplesController::class, 'createStoreWithOptions']);
+Route::get('/vector-store/get', [VectorStoreExamplesController::class, 'getStore']);
+Route::get('/vector-store/delete', [VectorStoreExamplesController::class, 'deleteStore']);
+Route::get('/vector-store/add-file', [VectorStoreExamplesController::class, 'addFileFromPath']);
+Route::get('/vector-store/add-storage', [VectorStoreExamplesController::class, 'addFileFromStorage']);
+Route::get('/vector-store/add-metadata', [VectorStoreExamplesController::class, 'addFileWithMetadata']);
+Route::get('/vector-store/remove-file', [VectorStoreExamplesController::class, 'removeFile']);
+Route::get('/vector-store/remove-file-storage', [VectorStoreExamplesController::class, 'removeFileAndStorage']);
+Route::get('/vector-store/full-workflow', [VectorStoreExamplesController::class, 'fullWorkflow']);
+Route::get('/vector-store/hybrid', [VectorStoreExamplesController::class, 'hybridSearch']);
+Route::get('/vector-store/info', [VectorStoreExamplesController::class, 'listStoreInfo']);
+Route::get('/vector-store/multiple', [VectorStoreExamplesController::class, 'createMultipleStores']);
+Route::get('/vector-store/add-string', [VectorStoreExamplesController::class, 'addFileFromString']);
+Route::get('/vector-store/delete-id', [VectorStoreExamplesController::class, 'deleteStoreById']);

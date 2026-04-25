@@ -3,18 +3,11 @@
 namespace App\Ai\Agents;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Laravel\Ai\Attributes\Timeout;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\HasStructuredOutput;
 use Laravel\Ai\Promptable;
 use Stringable;
-
-use Laravel\Ai\Attributes\MaxSteps;
-use Laravel\Ai\Attributes\MaxTokens;
-use Laravel\Ai\Attributes\Model;
-use Laravel\Ai\Attributes\Provider;
-use Laravel\Ai\Attributes\Temperature;
-use Laravel\Ai\Attributes\Timeout;
-
 
 /**
  * Agente para generar quiz de Verdadero/Falso basado en posts.

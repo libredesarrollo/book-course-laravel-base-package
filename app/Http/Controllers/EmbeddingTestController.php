@@ -5,15 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Document;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Ai\Embeddings;
 
 class EmbeddingTestController extends Controller
 {
-
- 
-
     /**
      * Genera embeddings usando PHP AI SDK (enfoque portable - funciona con cualquier provider)
      */

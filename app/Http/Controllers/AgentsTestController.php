@@ -13,11 +13,9 @@ use Laravel\Ai\Enums\Lab;
 
 use function Laravel\Ai\agent;
 
-
 /**
  * Controlador para ejemplos de uso de Gemma 3 con IA local (Ollama).
  */
-
 class AgentsTestController extends Controller
 {
     /**
@@ -30,10 +28,10 @@ class AgentsTestController extends Controller
         $response = agent(
             instructions: 'Eres un asistente útil y conciso.',
         )->prompt(
-                $mensaje,
-                // model: 'gemma-3-12b-it-IQ4_XS'
-                model: 'openai/gpt-oss-20b'
-            );
+            $mensaje,
+            // model: 'gemma-3-12b-it-IQ4_XS'
+            model: 'openai/gpt-oss-20b'
+        );
 
         return response()->json([
             'respuesta' => $response->text,
@@ -51,10 +49,10 @@ class AgentsTestController extends Controller
         $response = agent(
             instructions: 'Eres un experto en Laravel. Generas código limpio y sigues las mejores prácticas.',
         )->prompt(
-                "Genera {$tipo} en Laravel 13. Solo dame el código, sin explicaciones.",
-                // model: 'gemma-3-12b-it-IQ4_XS'
-                model: 'openai/gpt-oss-20b'
-            );
+            "Genera {$tipo} en Laravel 13. Solo dame el código, sin explicaciones.",
+            // model: 'gemma-3-12b-it-IQ4_XS'
+            model: 'openai/gpt-oss-20b'
+        );
 
         return response()->json([
             'codigo' => $response->text,
@@ -72,10 +70,10 @@ class AgentsTestController extends Controller
         $response = agent(
             instructions: 'Eres un analizador de sentimientos. Respondes solo con positivo, negativo o neutro.',
         )->prompt(
-                "Clasifica el siguiente texto: {$texto}",
-                // model: 'gemma-3-12b-it-IQ4_XS'
-                model: 'openai/gpt-oss-20b'
-            );
+            "Clasifica el siguiente texto: {$texto}",
+            // model: 'gemma-3-12b-it-IQ4_XS'
+            model: 'openai/gpt-oss-20b'
+        );
 
         return response()->json([
             'sentimiento' => trim($response->text),
@@ -93,11 +91,11 @@ class AgentsTestController extends Controller
         $response = agent(
             instructions: 'Eres un asistente conciso.',
         )->prompt(
-                $pregunta,
-                provider: [Lab::Ollama, Lab::OpenAI],
-                // model: 'gemma-3-12b-it-IQ4_XS'
-                model: 'openai/gpt-oss-20b'
-            );
+            $pregunta,
+            provider: [Lab::Ollama, Lab::OpenAI],
+            // model: 'gemma-3-12b-it-IQ4_XS'
+            model: 'openai/gpt-oss-20b'
+        );
 
         return response()->json([
             'respuesta' => $response->text,
@@ -118,6 +116,7 @@ class AgentsTestController extends Controller
             model: 'Qwen3-4B-Instruct-2507-IQ4_XS',
             timeout: 120
         );
+
         // dd($resultado);
         return response()->json([
             'resultado' => $resultado->toArray(),
@@ -147,7 +146,7 @@ class AgentsTestController extends Controller
         $ids = $request->input('ids');
         $cantidad = $request->input('cantidad', 5);
 
-        $posts = Post::when($ids, fn($query) => $query->whereIn('id', array_filter(explode(',', $ids))), fn($query) => $query->where('posted', 'yes')->limit(1))
+        $posts = Post::when($ids, fn ($query) => $query->whereIn('id', array_filter(explode(',', $ids))), fn ($query) => $query->where('posted', 'yes')->limit(1))
             ->get(['title', 'content']);
 
         if ($posts->isEmpty()) {
@@ -179,14 +178,14 @@ class AgentsTestController extends Controller
         $ids = $request->input('ids'); // 1,2,3
         $cantidad = $request->input('cantidad', 5);
 
-        $posts = Post::when($ids, fn($query) => $query->whereIn('id', array_filter(explode(',', $ids))), fn($query) => $query->where('posted', 'yes')->limit(1))
+        $posts = Post::when($ids, fn ($query) => $query->whereIn('id', array_filter(explode(',', $ids))), fn ($query) => $query->where('posted', 'yes')->limit(1))
             ->get(['title', 'content']);
 
         if ($posts->isEmpty()) {
             return response()->json(['error' => 'No hay contenido'], 404);
         }
         // dd( $posts);
-        $contenido = $posts->map(fn($post) => "Título: {$post->title}\nContenido: {$post->content}")->join("\n\n---\n\n");
+        $contenido = $posts->map(fn ($post) => "Título: {$post->title}\nContenido: {$post->content}")->join("\n\n---\n\n");
 
         $prompt = "Basándote en los siguientes posts, genera {$cantidad} preguntas de verdadero o falso:\n\n{$contenido}";
 
@@ -203,12 +202,12 @@ class AgentsTestController extends Controller
         ]);
     }
 
-    function salesCoach() {
+    public function salesCoach()
+    {
         $response = (new SalesCoach)
-        ->prompt('Analyze this sales transcript...',
-        model: 'Qwen3-4B-Instruct-2507-IQ4_XS');
- 
+            ->prompt('Analyze this sales transcript...',
+                model: 'Qwen3-4B-Instruct-2507-IQ4_XS');
+
         return (string) $response;
     }
-    
 }
