@@ -7,10 +7,12 @@ use App\Http\Controllers\PaymentPaypalController;
 use App\Http\Controllers\RerankingExamplesController;
 use App\Http\Controllers\VectorStoreExamplesController;
 use Illuminate\Support\Facades\Route;
+use Laravel\Ai\Enums\Lab;
 use Maatwebsite\Excel\Facades\Excel;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 use function Laravel\Ai\agent;
+use Laravel\Ai\Image;
 
 Route::get('/', function () {
     return view('welcome');
@@ -122,6 +124,14 @@ Route::get('/agents/quiz-posts', [AgentsTestController::class, 'quizPosts']);
 // Quiz Verdadero/Falso basado en Posts (versión simple con prompt)
 Route::get('/agents/quiz-simple', [AgentsTestController::class, 'quizPostsSimple']);
 
+Route::get('/agents/image',function(){
+    $image = Image::of('A donut sitting on the kitchen counter')->generate(provider: [Lab::Gemini/*, Lab::xAI*/]);
+    $rawContent = (string) $image;
+    dd($rawContent);
+});
+
+
+
 /*
 |--------------------------------------------------------------------------
 | Embeddings Test Routes
@@ -141,7 +151,7 @@ Route::get('/embeddings/test-cached', [EmbeddingTestController::class, 'testCach
 
 /*
 |--------------------------------------------------------------------------
-| Reranking Examples Routes
+| Reranking Examples Routes FALTA PROBAR
 |--------------------------------------------------------------------------
 */
 Route::get('/reranking/basic', [RerankingExamplesController::class, 'basicReranking']);
