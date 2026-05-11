@@ -1,18 +1,22 @@
 <?php
 
+use App\Ai\Agents\Appointment;
+use App\Ai\Agents\Assistant;
 use App\Exports\PostsExport;
 use App\Http\Controllers\AgentsTestController;
+use App\Http\Controllers\Ai\AppointmentController;
+use App\Http\Controllers\Ai\AssistantController;
 use App\Http\Controllers\EmbeddingTestController;
 use App\Http\Controllers\PaymentPaypalController;
 use App\Http\Controllers\RerankingExamplesController;
 use App\Http\Controllers\VectorStoreExamplesController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Ai\Enums\Lab;
+use Laravel\Ai\Image;
 use Maatwebsite\Excel\Facades\Excel;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 use function Laravel\Ai\agent;
-use Laravel\Ai\Image;
 
 Route::get('/', function () {
     return view('welcome');
@@ -124,13 +128,11 @@ Route::get('/agents/quiz-posts', [AgentsTestController::class, 'quizPosts']);
 // Quiz Verdadero/Falso basado en Posts (versión simple con prompt)
 Route::get('/agents/quiz-simple', [AgentsTestController::class, 'quizPostsSimple']);
 
-Route::get('/agents/image',function(){
-    $image = Image::of('A donut sitting on the kitchen counter')->generate(provider: [Lab::Gemini/*, Lab::xAI*/]);
+Route::get('/agents/image', function () {
+    $image = Image::of('A donut sitting on the kitchen counter')->generate(provider: [Lab::Gemini/* , Lab::xAI */]);
     $rawContent = (string) $image;
     dd($rawContent);
 });
-
-
 
 /*
 |--------------------------------------------------------------------------
@@ -186,3 +188,19 @@ Route::get('/vector-store/info', [VectorStoreExamplesController::class, 'listSto
 Route::get('/vector-store/multiple', [VectorStoreExamplesController::class, 'createMultipleStores']);
 Route::get('/vector-store/add-string', [VectorStoreExamplesController::class, 'addFileFromString']);
 Route::get('/vector-store/delete-id', [VectorStoreExamplesController::class, 'deleteStoreById']);
+
+/*
+|--------------------------------------------------------------------------
+| AI Assistant Routes
+|--------------------------------------------------------------------------
+*/
+Route::post('/ai/assistant/chat', [AssistantController::class, 'chat']);
+Route::post('/ai/assistant/fetch', [AssistantController::class, 'fetchUrl']);
+
+/*
+|--------------------------------------------------------------------------
+| AI Appointment Routes
+|--------------------------------------------------------------------------
+*/
+Route::post('/ai/appointment/schedule', [AppointmentController::class, 'schedule']);
+Route::get('/ai/appointment/list', [AppointmentController::class, 'list']);

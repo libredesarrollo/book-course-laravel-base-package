@@ -29,8 +29,8 @@ class AgentsTestController extends Controller
             instructions: 'Eres un asistente útil y conciso.',
         )->prompt(
             $mensaje,
-            // model: 'gemma-3-12b-it-IQ4_XS'
-            model: 'openai/gpt-oss-20b'
+            model: 'gemma-3-12b-it-IQ4_XS'
+            // model: 'openai/gpt-oss-20b'
         );
 
         return response()->json([
@@ -50,8 +50,8 @@ class AgentsTestController extends Controller
             instructions: 'Eres un experto en Laravel. Generas código limpio y sigues las mejores prácticas.',
         )->prompt(
             "Genera {$tipo} en Laravel 13. Solo dame el código, sin explicaciones.",
-            // model: 'gemma-3-12b-it-IQ4_XS'
-            model: 'openai/gpt-oss-20b'
+            model: 'gemma-3-12b-it-IQ4_XS'
+            // model: 'openai/gpt-oss-20b'
         );
 
         return response()->json([

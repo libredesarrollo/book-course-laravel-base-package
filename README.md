@@ -65,3 +65,7 @@ Laragon o Laravel Herd o en MacOS Laravel Herd y MacOS y Linux con Laravel Sail 
 ---
 
 
+## Asistentes
+
+- ai:appointment
+- ai:assistant
