@@ -11,8 +11,8 @@ use Laravel\Ai\Enums\Lab;
 use Laravel\Ai\Promptable;
 use Stringable;
 
-#[Provider(Lab::Ollama)]
-#[Model('gemma3:1b')]
+// #[Provider(Lab::Ollama)]
+// #[Model('gemma3:1b')]
 class Appointment implements Agent, HasTools
 {
     use Promptable;

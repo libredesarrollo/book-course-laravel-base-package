@@ -129,7 +129,7 @@ Route::get('/agents/quiz-posts', [AgentsTestController::class, 'quizPosts']);
 Route::get('/agents/quiz-simple', [AgentsTestController::class, 'quizPostsSimple']);
 
 Route::get('/agents/image', function () {
-    $image = Image::of('A donut sitting on the kitchen counter')->generate(provider: [Lab::Gemini/* , Lab::xAI */]);
+    $image = Image::of('A donut sitting on the kitchen counter')->generate(provider: [Lab::Gemini, Lab::xAI]);
     $rawContent = (string) $image;
     dd($rawContent);
 });
