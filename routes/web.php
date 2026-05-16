@@ -8,6 +8,7 @@ use App\Http\Controllers\Ai\AppointmentController;
 use App\Http\Controllers\Ai\AssistantController;
 use App\Http\Controllers\EmbeddingTestController;
 use App\Http\Controllers\PaymentPaypalController;
+use App\Http\Controllers\PostQueryBuilderController;
 use App\Http\Controllers\RerankingExamplesController;
 use App\Http\Controllers\VectorStoreExamplesController;
 use Illuminate\Support\Facades\Route;
@@ -204,3 +205,22 @@ Route::post('/ai/assistant/fetch', [AssistantController::class, 'fetchUrl']);
 */
 Route::post('/ai/appointment/schedule', [AppointmentController::class, 'schedule']);
 Route::get('/ai/appointment/list', [AppointmentController::class, 'list']);
+
+/*
+|--------------------------------------------------------------------------
+| Ejemplos de Spatie Laravel Query Builder
+|--------------------------------------------------------------------------
+|
+| Ejemplos de uso del paquete spatie/laravel-query-builder para construir
+| consultas Eloquent desde parámetros de request (filter, sort, include, fields).
+|
+*/
+Route::get('/posts', [PostQueryBuilderController::class, 'index']);
+Route::get('/posts-filtered', [PostQueryBuilderController::class, 'filtered']);
+Route::get('/posts-include', [PostQueryBuilderController::class, 'withIncludes']);
+Route::get('/posts-fields', [PostQueryBuilderController::class, 'withFields']);
+Route::get('/posts-full', [PostQueryBuilderController::class, 'fullExample']);
+Route::get('/posts-active', [PostQueryBuilderController::class, 'fromExistingQuery']);
+Route::get('/posts-modifiers', [PostQueryBuilderController::class, 'withFilterModifiers']);
+Route::get('/posts-multiple', [PostQueryBuilderController::class, 'withMultipleValues']);
+Route::get('/api/posts', [PostQueryBuilderController::class, 'apiIndex']);
