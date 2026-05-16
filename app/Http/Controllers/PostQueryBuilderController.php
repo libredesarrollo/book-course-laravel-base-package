@@ -30,7 +30,7 @@ class PostQueryBuilderController extends Controller
 
     /**
      * Ejemplo: filtrado exacto y ordenamiento.
-     * URL: /posts-filtered?filter[posted]=published&sort=-created_at
+     * URL: /posts-filtered?filter[posted]=yes&sort=-created_at
      *
      * - filter[posted]=published: filtro exacto
      * - sort=-created_at: orden descendente por fecha de creación
