@@ -69,6 +69,3 @@ Laragon o Laravel Herd o en MacOS Laravel Herd y MacOS y Linux con Laravel Sail 
 
 - ai:appointment
 - ai:assistant
-
-
-php artisan migrate:generate --tables="tags"

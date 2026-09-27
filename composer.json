@@ -24,6 +24,7 @@
         "fakerphp/faker": "^1.23",
         "kitloong/laravel-migrations-generator": "^7.4",
         "laravel/boost": "^2.4",
+        "laravel/doctor": "^0.1.0",
         "laravel/pail": "^1.2.5",
         "laravel/pint": "^1.27",
         "mockery/mockery": "^1.6",
