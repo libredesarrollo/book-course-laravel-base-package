@@ -17,6 +17,7 @@
         "mobiledetect/mobiledetectlib": "^4.8",
         "omaralalwi/laravel-trash-cleaner": "^1.0",
         "pgvector/pgvector": "^0.2.2",
+        "realrashid/laravel-driverjs": "^1.0",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-query-builder": "^7.3"
     },

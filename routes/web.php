@@ -6,6 +6,7 @@ use App\Exports\PostsExport;
 use App\Http\Controllers\AgentsTestController;
 use App\Http\Controllers\Ai\AppointmentController;
 use App\Http\Controllers\Ai\AssistantController;
+use App\Http\Controllers\DriverJsDemoController;
 use App\Http\Controllers\EmbeddingTestController;
 use App\Http\Controllers\PaymentPaypalController;
 use App\Http\Controllers\PostQueryBuilderController;
@@ -224,3 +225,15 @@ Route::get('/posts-active', [PostQueryBuilderController::class, 'fromExistingQue
 Route::get('/posts-modifiers', [PostQueryBuilderController::class, 'withFilterModifiers']);
 Route::get('/posts-multiple', [PostQueryBuilderController::class, 'withMultipleValues']);
 Route::get('/api/posts', [PostQueryBuilderController::class, 'apiIndex']);
+
+/*
+|--------------------------------------------------------------------------
+| Ejemplo de realrashid/laravel-driverjs
+|--------------------------------------------------------------------------
+|
+| Página de demostración con tours, highlights, modales, hooks, tracking de
+| completados y las tres directivas Blade del paquete.
+|
+*/
+Route::get('/driverjs-demo', [DriverJsDemoController::class, 'index'])->name('driverjs-demo');
+Route::post('/driverjs-demo/reiniciar', [DriverJsDemoController::class, 'reiniciar'])->name('driverjs-demo.reiniciar');
