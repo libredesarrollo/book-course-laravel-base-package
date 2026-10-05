@@ -15,6 +15,9 @@ use App\Http\Controllers\VectorStoreExamplesController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Ai\Enums\Lab;
 use Laravel\Ai\Image;
+use LaravelDaily\Invoices\Classes\Buyer;
+use LaravelDaily\Invoices\Classes\InvoiceItem;
+use LaravelDaily\Invoices\Invoice;
 use Maatwebsite\Excel\Facades\Excel;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -237,3 +240,7 @@ Route::get('/api/posts', [PostQueryBuilderController::class, 'apiIndex']);
 */
 Route::get('/driverjs-demo', [DriverJsDemoController::class, 'index'])->name('driverjs-demo');
 Route::post('/driverjs-demo/reiniciar', [DriverJsDemoController::class, 'reiniciar'])->name('driverjs-demo.reiniciar');
+
+use App\Http\Controllers\InvoiceDemoController;
+
+Route::get('/demo-invoice', [InvoiceDemoController::class, 'show']);

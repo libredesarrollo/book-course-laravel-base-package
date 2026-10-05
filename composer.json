@@ -13,6 +13,7 @@
         "laravel/ai": "^0.4.2",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
+        "laraveldaily/laravel-invoices": "^4.2",
         "maatwebsite/excel": "^3.1",
         "mobiledetect/mobiledetectlib": "^4.8",
         "omaralalwi/laravel-trash-cleaner": "^1.0",
