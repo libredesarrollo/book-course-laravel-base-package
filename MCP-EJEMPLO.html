@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Laravel MCP - Ejemplo funcional con el modelo Post</title>
+</head>
+<body>
+
+<h1>Laravel MCP: ejemplo funcional con el modelo Post</h1>
+
+<p>
+Documento sin formato (HTML plano) que explica qué se construyó, cómo funciona,
+cómo se usa y qué datos adicionales conviene tener en cuenta.
+Proyecto: <code>/Users/andrescruz/Herd/larapackage</code>
+Paquete: <code>laravel/mcp</code> v1.0.1 &middot; Laravel 13.34 &middot; PHP 8.4
+</p>
+
+<hr>
+
+<h2>1. ¿Qué es MCP?</h2>
+
+<p>
+MCP (<em>Model Context Protocol</em>) es un protocolo abierto que permite que
+clientes de IA (Claude Desktop, Cursor, Claude Code, VS Code Copilot, etc.)
+descubran y ejecuten capacidades de tu aplicación.
+</p>
+
+<p>
+En lugar de que cada cliente tenga una integración a mano, tu aplicación expone
+un <strong>Servidor MCP</strong> y el cliente lo consume. El servidor ofrece tres
+tipos de primitivas:
+</p>
+
+<ul>
+  <li><strong>Tools</strong>: acciones que el modelo puede ejecutar
+      (<code>list-posts-tool</code>, <code>get-post-tool</code>).
+      Son las que "hacen cosas".</li>
+  <li><strong>Resources</strong>: datos que el modelo puede leer como contexto
+      (<code>app://info</code>). Son de solo lectura.</li>
+  <li><strong>Prompts</strong>: plantillas reutilizables de prompt que el
+      cliente puede pedirle al usuario (<code>summarize-posts-prompt</code>).</li>
+</ul>
+
+<p>
+El transporte puede ser HTTP (Streamable HTTP) o proceso local (comando Artisan).
+Todo esto ya viene resuelto por el paquete: los servidores de Laravel MCP se
+registran como rutas normales y también como comandos.
+</p>
+
+<hr>
+
+<h2>2. Qué se creó</h2>
+
+<pre>
+app/Mcp/
+├── Servers/
+│   └── PostServer.php        Servidor: registra tools, resources y prompts
+├── Tools/
+│   ├── ListPostsTool.php     Lista posts (paginación + búsqueda)
+│   └── GetPostTool.php       Obtiene un post por ID
+├── Resources/
+│   └── AppInfoResource.php   Resource app://info (stats de la app)
+└── Prompts/
+    └── SummarizePostsPrompt.php  Plantilla de prompt con argumentos
+
+routes/ai.php                  Registra el servidor web y el local
+tests/Feature/Mcp/
+└── PostServerTest.php        8 tests Pest (todos pasan)
+</pre>
+
+<p>
+No hizo falta tocar <code>bootstrap/app.php</code>: el ServiceProvider de
+<code>laravel/mcp</code> carga <code>routes/ai.php</code> automáticamente.
+</p>
+
+<h3>Comandos usados</h3>
+
+<pre>
+composer require laravel/mcp
+
+php artisan vendor:publish --tag=ai-routes
+php artisan make:mcp-server PostServer
+php artisan make:mcp-tool ListPostsTool
+php artisan make:mcp-tool GetPostTool
+php artisan make:mcp-resource AppInfoResource
+php artisan make:mcp-prompt SummarizePostsPrompt
+php artisan make:test --pest Mcp/PostServerTest
+</pre>
+
+<hr>
+
+<h2>3. El código</h2>
+
+<h3>3.1 El servidor &mdash; app/Mcp/Servers/PostServer.php</h3>
+
+<pre>
+&lt;?php
+
+namespace App\Mcp\Servers;
+
+use Laravel\Mcp\Server;
+use Laravel\Mcp\Server\Attributes\Instructions;
+use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Attributes\Version;
+
+#[Name('Post Server')]
+#[Version('1.0.0')]
+#[Instructions('Este servidor expone los posts del blog...')]
+class PostServer extends Server
+{
+    protected array $tools = [
+        ListPostsTool::class,
+        GetPostTool::class,
+    ];
+
+    protected array $resources = [
+        AppInfoResource::class,
+    ];
+
+    protected array $prompts = [
+        SummarizePostsPrompt::class,
+    ];
+}
+</pre>
+
+<p>
+El servidor es solo un contenedor. Los atributos <code>#[Name]</code>,
+<code>#[Version]</code> e <code>#[Instructions]</code> son metadatos que ve el
+cliente de IA: las <em>instructions</em> en particular son las que el modelo lee
+para saber cómo y cuándo usar las herramientas.
+</p>
+
+<h3>3.2 Tool: ListPostsTool &mdash; app/Mcp/Tools/ListPostsTool.php</h3>
+
+<pre>
+#[Description('Lista los posts del blog con paginación y filtro opcional por texto.')]
+class ListPostsTool extends Tool
+{
+    public function handle(Request $request): Response|ResponseFactory
+    {
+        $validated = $request->validate([
+            'search'   => ['nullable', 'string', 'max:100'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
+        ], [
+            'per_page.min' => 'per_page debe ser al menos 1.',
+            'per_page.max' => 'per_page no puede ser mayor a 50.',
+        ]);
+
+        $perPage = (int) ($validated['per_page'] ?? 10);
+
+        $query = Post::query()->latest();
+
+        if ($search = $validated['search'] ?? null) {
+            $query->where(function ($query) use ($search) {
+                $query->where('title', 'like', "%{$search}%")
+                    ->orWhere('content', 'like', "%{$search}%");
+            });
+        }
+
+        $posts = $query->paginate($perPage);
+
+        if ($posts->isEmpty()) {
+            return Response::text('No se encontraron posts.');
+        }
+
+        $summary = $posts->getCollection()->map(fn (Post $post) => [
+            'id'         =&gt; $post->id,
+            'title'      =&gt; $post->title,
+            'posted'     =&gt; in_array((string) $post->posted, ['1','true','yes','si'], true),
+            'created_at' =&gt; $post->created_at?->toDateTimeString(),
+        ])->all();
+
+        $header = sprintf(
+            'Mostrando %d de %d posts (página %d de %d).',
+            $posts->count(), $posts->total(),
+            $posts->currentPage(), $posts->lastPage(),
+        );
+
+        return Response::structured([
+            'summary'   =&gt; $header,
+            'total'     =&gt; $posts->total(),
+            'page'      =&gt; $posts->currentPage(),
+            'last_page' =&gt; $posts->lastPage(),
+            'posts'     =&gt; $summary,
+        ]);
+    }
+
+    public function schema(JsonSchema $schema): array
+    {
+        return [
+            'search'   =&gt; $schema->string()
+                            -&gt;description('Texto a buscar en título o contenido. Opcional.'),
+            'per_page' =&gt; $schema->integer()
+                            -&gt;description('Cantidad de posts por página (1-50). Defecto 10.'),
+        ];
+    }
+}
+</pre>
+
+<p><strong>Puntos clave de una tool:</strong></p>
+
+<ul>
+  <li><code>#[Description]</code> es el texto que lee el modelo para decidir si
+      llama a la tool. Si es vago, la tool no se usa. Es lo más importante.</li>
+  <li><code>schema()</code> define los argumentos y sus tipos. Laravel lo
+      convierte a JSON Schema y lo publica automáticamente en
+      <code>tools/list</code>. No hace falta escribir el JSON a mano.</li>
+  <li><code>$request-&gt;validate()</code> usa las validaciones normales de
+      Laravel. Los mensajes personalizados se leen tal cual en el cliente.</li>
+  <li><code>Response::structured()</code> devuelve JSON estructurado (el modelo
+      lo parsea mejor que texto libre). Por eso el retorno es
+      <code>Response|ResponseFactory</code>: <code>structured()</code> devuelve
+      un <code>ResponseFactory</code>, no un <code>Response</code>. Si declaras
+      solo <code>: Response</code> obtienes un
+      <em>TypeError</em> en tiempo de ejecución.</li>
+</ul>
+
+<h3>3.3 Tool: GetPostTool &mdash; app/Mcp/Tools/GetPostTool.php</h3>
+
+<pre>
+public function handle(Request $request): Response|ResponseFactory
+{
+    $validated = $request-&gt;validate([
+        'id' =&gt; ['required', 'integer', 'min:1'],
+    ], [
+        'id.required' =&gt; 'Debes indicar el ID del post.',
+        'id.integer'  =&gt; 'El ID del post debe ser un número entero.',
+    ]);
+
+    $post = Post::find($validated['id']);
+
+    if (! $post) {
+        return Response::error("El post con ID {$validated['id']} no existe.");
+    }
+
+    return Response::structured([...]);
+}
+</pre>
+
+<p>
+<code>Response::error()</code> marca la respuesta como error
+(<code>isError: true</code>) en lugar de lanzar una excepción. Es la forma correcta
+de decirle al modelo "esto no funcionó, inténtalo de otra forma": el error le
+llega como texto y puede reaccionar, en vez de tumbar la conexión.
+</p>
+
+<h3>3.4 Resource: AppInfoResource &mdash; app/Mcp/Resources/AppInfoResource.php</h3>
+
+<pre>
+#[Description('Información general de la aplicación: nombre, entorno y estadísticas del blog.')]
+#[Uri('app://info')]
+#[MimeType('application/json')]
+class AppInfoResource extends Resource
+{
+    public function handle(Request $request): Response
+    {
+        return Response::json([
+            'name'        =&gt; config('app.name'),
+            'environment' =&gt; config('app.env'),
+            'locale'      =&gt; config('app.locale'),
+            'stats' =&gt; [
+                'posts'           =&gt; Post::count(),
+                'published_posts' =&gt; Post::whereIn('posted', [1, '1', 'true', 'yes', 'si'])-&gt;count(),
+                'users'           =&gt; User::count(),
+            ],
+        ]);
+    }
+}
+</pre>
+
+<p>
+Los resources usan URIs (<code>app://info</code>) en vez de nombres. Son
+contexto que el cliente puede leer bajo demanda. Si el dato cambia solo, conviene
+marcarlo como no cacheable; si es estático, se puede cachear.
+</p>
+
+<h3>3.5 Prompt: SummarizePostsPrompt &mdash; app/Mcp/Prompts/SummarizePostsPrompt.php</h3>
+
+<pre>
+#[Description('Genera un prompt para resumir los posts más relevantes del blog.')]
+class SummarizePostsPrompt extends Prompt
+{
+    public function handle(Request $request): array
+    {
+        $tone  = $request-&gt;string('tone')-&gt;toString() ?: 'neutral';
+        $limit = (int) ($request-&gt;integer('limit') ?: 5);
+
+        $titles = Post::query()
+            -&gt;where('posted', true)
+            -&gt;latest()
+            -&gt;limit($limit)
+            -&gt;pluck('title')
+            -&gt;implode(', ');
+
+        return [
+            Response::text("Eres un redactor experto. Resume los siguientes posts en un tono {$tone}.")->asAssistant(),
+            Response::text("Posts a resumir: [{$titles}]"),
+        ];
+    }
+
+    public function arguments(): array
+    {
+        return [
+            new Argument(name: 'tone',  description: 'Tono del resumen. Opcional.', required: false),
+            new Argument(name: 'limit', description: 'Cantidad de posts. Defecto 5.', required: false),
+        ];
+    }
+}
+</pre>
+
+<p>
+Un prompt puede devolver <strong>varios</strong> mensajes. El que lleva
+<code>-&gt;asAssistant()</code> se presenta como mensaje del asistente (instrucciones
+de sistema para la conversación) y el resto como mensaje del usuario.
+</p>
+
+<h3>3.6 Rutas &mdash; routes/ai.php</h3>
+
+<pre>
+&lt;?php
+
+use App\Mcp\Servers\PostServer;
+use Laravel\Mcp\Facades\Mcp;
+
+// Servidor HTTP para clientes remotos
+Mcp::web('/mcp/posts', PostServer::class);
+
+// Servidor local (comando Artisan)
+Mcp::local('posts', PostServer::class);
+</pre>
+
+<p>
+Registrar el server web expone tres rutas en <code>/mcp/posts</code>:
+<code>GET</code> (stream SSE), <code>POST</code> (JSON-RPC) y
+<code>DELETE</code> (cerrar sesión).
+</p>
+
+<h3>3.7 Tests &mdash; tests/Feature/Mcp/PostServerTest.php</h3>
+
+<pre>
+uses(RefreshDatabase::class);   // (adaptado, ver nota 6.1)
+
+it('lists posts through the list posts tool', function () {
+    $post = createPost(['title' =&gt; 'Laravel MCP']);
+
+    PostServer::tool(ListPostsTool::class, ['per_page' =&gt; 10])
+        -&gt;assertOk()
+        -&gt;assertSee('Laravel MCP');
+});
+
+it('returns an error when the post does not exist', function () {
+    PostServer::tool(GetPostTool::class, ['id' =&gt; 9999])
+        -&gt;assertHasErrors(['El post con ID 9999 no existe.']);
+});
+
+it('builds the summarize posts prompt', function () {
+    PostServer::prompt(SummarizePostsPrompt::class, ['tone' =&gt; 'formal'])
+        -&gt;assertOk()
+        -&gt;assertSee('tono formal');
+});
+</pre>
+
+<p>
+La sintaxis de test es limpia: se invoca la primitiva directamente sobre el
+servidor y se encadena <code>assertOk()</code>, <code>assertSee()</code>,
+<code>assertHasErrors()</code>, <code>assertHasNoErrors()</code>,
+<code>assertName()</code>, <code>assertDescription()</code>. También existe
+<code>-&gt;actingAs($user)</code> para probar autorización.
+</p>
+
+<pre>
+php artisan test tests/Feature/Mcp/PostServerTest.php
+# Tests: 8 passed (18 assertions)
+</pre>
+
+<hr>
+
+<h2>4. Cómo se usa</h2>
+
+<h3>4.1 Con el MCP Inspector (lo más rápido para debuggear)</h3>
+
+<pre>
+php artisan mcp:inspector mcp/posts   # servidor web
+php artisan mcp:inspector posts       # servidor local
+</pre>
+
+<p>
+Levanta el Inspector de la tarde oficial, imprime la configuración de conexión y
+permite listar e invocar tools, resources y prompts a mano. Ideal para escribir
+la tool antes de conectarla a un cliente real.
+</p>
+
+<h3>4.2 Servidor local (línea de comandos)</h3>
+
+<pre>
+php artisan mcp:start posts
+</pre>
+
+<p>
+Cada cliente de IA lanza este comando él mismo. Configuración típica:
+</p>
+
+<pre>
+{
+  "mcpServers": {
+    "laravel-posts": {
+      "command": "php",
+      "args": ["artisan", "mcp:start", "posts"],
+      "cwd": "/Users/andrescruz/Herd/larapackage"
+    }
+  }
+}
+</pre>
+
+<h3>4.3 Servidor web (HTTP)</h3>
+
+<pre>
+{
+  "mcpServers": {
+    "laravel-posts": {
+      "url": "http://larapackage.test/mcp/posts"
+    }
+  }
+}
+</pre>
+
+<p>
+<code>http://larapackage.test</code> es el dominio de Herd de este proyecto.
+Desde otro dispositivo o en producción hay que usar el dominio real y servir por
+HTTPS.
+</p>
+
+<h3>4.4 Probarlo desde Tinker (sin cliente)</h3>
+
+<p>
+El propio paquete trae un cliente MCP, así que puedes llamar a tu propio server
+desde código o desde tinker. Es la forma más rápida de comprobar la salida real:
+</p>
+
+<pre>
+php artisan tinker --execute '
+$c = Laravel\Mcp\Client::local(PHP_BINARY, ["artisan", "mcp:start", "posts"]);
+
+$c->tools();                                 // lista las tools
+$c->callTool("list-posts-tool", ["per_page" =&gt; 3])-&gt;text();
+$c->callTool("get-post-tool",  ["id" =&gt; 1])-&gt;text();
+$c->readResource("app://info")-&gt;content();
+$c->getPrompt("summarize-posts-prompt", ["tone" =&gt; "formal"])-&gt;text();
+'
+</pre>
+
+<p>Salida real verificada:</p>
+
+<pre>
+list-posts-tool | Lista los posts del blog con paginación y filtro opcional...
+get-post-tool   | Obtiene el contenido completo de un post del blog...
+
+{"summary":"Mostrando 3 de 30 posts (página 1 de 10).","total":30,
+ "page":1,"last_page":10,"posts":[...]}
+
+{"name":"Laravel","environment":"local","locale":"en",
+ "stats":{"posts":30,"published_posts":16,"users":3}}
+</pre>
+
+<p>
+Ojo con los nombres: el cliente usa el nombre derivado de la clase
+(<code>list-posts-tool</code>, con el sufijo <code>-tool</code>), no el
+<code>list-posts</code> del ejemplo conceptual de la documentación.
+</p>
+
+<hr>
+
+<h2>5. Por qué el navegador da 405 y cómo se prueba en serio</h2>
+
+<h3>5.1 El 405 no es un error, es la respuesta correcta</h3>
+
+<p>
+Si abres <code>http://larapackage.test/mcp/posts</code> en el navegador verás
+<code>405 Method Not Allowed</code>. Es lo esperado: un <code>GET</code> de
+navegador manda <code>Accept: text/html</code>, y un servidor MCP no habla HTML.
+El protocolo exige <code>POST</code> con un cuerpo JSON-RPC 2.0.
+</p>
+
+<pre>
+$ curl -i http://larapackage.test/mcp/posts
+HTTP/1.1 405 Method Not Allowed
+
+$ curl -X POST http://larapackage.test/mcp/posts \
+    -H 'Content-Type: application/json' \
+    -H 'Accept: application/json, text/event-stream' \
+    -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{
+         "protocolVersion":"2025-06-18","capabilities":{},
+         "clientInfo":{"name":"curl","version":"1.0"}}}'
+</pre>
+
+<p>Respuesta real del servidor:</p>
+
+<pre>
+{"jsonrpc":"2.0","id":1,"result":{"resultType":"complete","protocolVersion":"2025-06-18",
+ "capabilities":{"tools":{"listChanged":false},"resources":{"listChanged":false},
+                 "prompts":{"listChanged":false}},
+ "serverInfo":{"name":"Post Server","version":"1.0.0"},
+ "instructions":"Este servidor expone los posts del blog: puede listarlos, buscar uno
+                 por su ID y leer información general de la aplicación."}}
+</pre>
+
+<p>
+Ahí se ve el <code>serverInfo</code>, las capacidades declaradas y las
+<code>instructions</code> que son el "prompt de sistema" que lee el modelo.
+<strong>Nunca se prueba un servidor MCP con el navegador.</strong>
+</p>
+
+<h3>5.2 Probarlo de verdad: con una IA</h3>
+
+<p>
+MCP es un contrato entre una aplicación y un agente de IA. El cliente correcto es
+Claude Desktop, Cursor, Claude Code u opencode. Este proyecto ya tiene
+<code>opencode.json</code>, así que el servidor quedó registrado ahí:
+</p>
+
+<pre>
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "laravel-boost": { "type": "local", "command": ["php", "artisan", "boost:mcp"] },
+
+    "laravel-posts": {
+      "type": "local",
+      "enabled": true,
+      "command": ["php", "artisan", "mcp:start", "posts"]
+    },
+
+    "laravel-posts-http": {
+      "type": "remote",
+      "enabled": false,
+      "url": "http://larapackage.test/mcp/posts"
+    }
+  }
+}
+</pre>
+
+<p>
+Hay dos entradas a propósito:
+</p>
+
+<ul>
+  <li><code>laravel-posts</code> (local, activa): opencode lanza
+      <code>php artisan mcp:start posts</code>. No depende de Herd, de nginx ni de
+      que el servidor esté arriba. Es la opción cómoda para desarrollo.</li>
+  <li><code>laravel-posts-http</code> (remote, desactivada): apunta al server web.
+      Se activa con <code>"enabled": true</code> para probar exactamente lo que vería
+      un cliente remoto. Requiere <code>php artisan serve</code> o Herd levantado.</li>
+</ul>
+
+<p>
+Para Claude Desktop o cualquier cliente externo, el equivalente es:
+</p>
+
+<pre>
+{
+  "mcpServers": {
+    "laravel-posts": {
+      "command": "php",
+      "args": ["artisan", "mcp:start", "posts"],
+      "cwd": "/Users/andrescruz/Herd/larapackage"
+    }
+  }
+}
+</pre>
+
+<p>
+Para el cliente web, la URL es <code>http://larapackage.test/mcp/posts</code>.
+</p>
+
+<p>
+<strong>Importante:</strong> opencode carga la configuración una sola vez al
+arrancar. Después de editar <code>opencode.json</code> hay que cerrar y volver a
+abrir opencode; la sesión actual sigue usando la config anterior.
+</p>
+
+<h3>5.3 Qué se debería pedirle a la IA una vez conectado</h3>
+
+<p>
+La prueba real no es "responde el prompt", sino ver si el modelo <em>elige</em> las
+tools correctas. Ejercicios que revelan si el ejemplo está bien:
+</p>
+
+<table border="1" cellpadding="4" cellspacing="0">
+  <tr><th>Pregunta a la IA</th><th>Qué demuestra</th></tr>
+  <tr>
+    <td>"¿Qué posts tiene el blog?"</td>
+    <td>Debería llamar <code>list-posts-tool</code> sin que se lo pidas.</td>
+  </tr>
+  <tr>
+    <td>"Busca posts sobre Laravel"</td>
+    <td>Debe pasar <code>search: "Laravel"</code> en los argumentos.</td>
+  </tr>
+  <tr>
+    <td>"Dame el post 3"</td>
+    <td>Debe invocar <code>get-post-tool</code> con <code>id: 3</code>.</td>
+  </tr>
+  <tr>
+    <td>"Dame el post 99999"</td>
+    <td>Prueba el manejo de <code>Response::error()</code>: el modelo debe
+        explicar que no existe, no reintentar en bucle.</td>
+  </tr>
+  <tr>
+    <td>"Dame 500 posts"</td>
+    <td>Prueba la validación: debe recibir el error de
+        <code>per_page.max</code> y volver a pedir un valor válido.</td>
+  </tr>
+  <tr>
+    <td>"Resume los posts en tono formal"</td>
+    <td>Debe usar el prompt <code>summarize-posts-prompt</code>.</td>
+  </tr>
+  <tr>
+    <td>"¿Cuántos posts publicados hay?"</td>
+    <td>Prueba si lee el resource <code>app://info</code>.</td>
+  </tr>
+</table>
+
+<p>
+Si la IA no elige una tool que debería, casi siempre el problema es la
+<code>#[Description]</code> o las <code>#[Instructions]</code> del servidor, no el
+código de la tool. Ese es el ajuste más fino de todo MCP.
+</p>
+
+<h3>5.4 Herramientas de diagnóstico cuando algo falla</h3>
+
+<pre>
+php artisan mcp:inspector mcp/posts     # probar primitivas a mano
+php artisan mcp:start posts             # ver si el server arranca
+php artisan route:list --path=mcp       # confirmar el registro
+</pre>
+
+<p>
+Y para ver la salida cruda de una tool sin IA de por medio, el propio paquete
+incluye un cliente MCP:
+</p>
+
+<pre>
+php artisan tinker --execute '
+$c = Laravel\Mcp\Client::local(PHP_BINARY, ["artisan", "mcp:start", "posts"]);
+$c-&gt;callTool("list-posts-tool", ["per_page" =&gt; 3])-&gt;text();
+'
+</pre>
+
+<hr>
+
+<h2>6. Datos adicionales que conviene saber</h2>
+
+<h3>6.1 Dos problemas reales del proyecto que hubo que sortear</h3>
+
+<p>
+<strong>6.1.1 Las migraciones de pgvector no corren en SQLite.</strong>
+El paquete <code>pgvector/pgvector</code> publica una migración
+<code>create_vector_extension</code> que ejecuta
+<code>CREATE EXTENSION IF NOT EXISTS vector</code>, y SQLite no entiende esa
+sintaxis. Con eso, <code>RefreshDatabase</code> revienta antes de llegar a
+nuestro código:
+</p>
+
+<pre>
+QueryException: SQLSTATE[HY000]: General error: 1 near "EXTENSION": syntax error
+(SQL: CREATE EXTENSION IF NOT EXISTS vector)
+</pre>
+
+<p>
+El test lo resuelve migrando solo las tablas necesarias, en vez de todas:
+</p>
+
+<pre>
+Artisan::call('migrate:fresh', [
+    '--force'    =&gt; true,
+    '--realpath' =&gt; true,
+    '--path'     =&gt; [
+        database_path('migrations/0001_01_01_000000_create_users_table.php'),
+        database_path('migrations/2026_09_26_093945_create_categories_table.php'),
+        database_path('migrations/2026_09_26_094316_create_posts_table.php'),
+        database_path('migrations/2026_09_26_094319_add_foreign_keys_to_posts_table.php'),
+    ],
+]);
+</pre>
+
+<p>
+Si en algún momento quieres tests con <code>RefreshDatabase</code> limpios, la
+solución de fondo es hacer la migración de documentos consciente del driver
+(guardar el <code>vector</code> solo en pgsql) o mover los tests de embeddings a
+una base pgvector propia. Es un cambio de app, no del ejemplo MCP, así que no se
+tocó.
+</p>
+
+<p>
+<strong>6.1.2 La columna <code>posted</code> es un string, no un booleano.</strong>
+</p>
+
+<pre>
+$table-&gt;string('posted')-&gt;default('not');
+</pre>
+
+<p>
+Un <code>(bool) 'not'</code> en PHP es <code>true</code> (cualquier string no
+vacío es truthy). Si se usaba <code>where('posted', true)</code> o
+<code>(bool) $post-&gt;posted</code>, todos los posts CONTABAN como publicados.
+Por eso el ejemplo usa:
+</p>
+
+<pre>
+in_array((string) $post-&gt;posted, ['1', 'true', 'yes', 'si'], true)
+</pre>
+
+<p>
+Lo correcto a futuro es un cast en el modelo:
+<code>protected function casts(): array { return ['posted' =&gt; 'boolean']; }</code>
+migrando la columna a <code>boolean</code>, o directamente un enum. Si se cambia,
+este ejemplo se simplifica.
+</p>
+
+<h3>6.2 Autenticación</h3>
+
+<p>
+El server está abierto. Para protegerlo:
+</p>
+
+<pre>
+use Laravel\Mcp\Facades\Mcp;
+
+Mcp::web('/mcp/posts', PostServer::class)
+    -&gt;middleware(['auth:sanctum', 'throttle:mcp']);
+</pre>
+
+<p>
+El cliente debe mandar <code>Authorization: Bearer &lt;token&gt;</code>. Sanctum es
+lo más rápido; Passport (OAuth 2.1) es lo que recomienda la especificación MCP
+porque es lo que más clientes soporta. Con Passport además se registra
+<code>Mcp::oauthRoutes()</code> y se aplica <code>auth:api</code>.
+</p>
+
+<p>
+Para autorización dentro de la tool, el request trae el usuario:
+</p>
+
+<pre>
+public function handle(Request $request): Response
+{
+    abort_unless($request-&gt;user()?-&gt;can('read-posts'), 403);
+
+    // ...
+}
+</pre>
+
+<h3>6.3 Evitar filtrar toda la tabla al modelo</h3>
+
+<p>
+<code>ListPostsTool</code> pagina y limita a 50 filas, pero una tool sin techo es
+un agujero: un agente puede pedir <code>per_page: 50</code> cien veces. Buenas
+prácticas:
+</p>
+
+<ul>
+  <li>Tope duro en <code>per_page</code> (ya está: 1-50).</li>
+  <li><code>Cacheable</code> cuando el dato cambia poco y la operación es cara.</li>
+  <li>Registrar en <code>routes/ai.php</code> con
+      <code>-&gt;middleware('throttle:mcp')</code>.</li>
+</ul>
+
+<h3>6.4 Catálogos de tools cuando crezcan</h3>
+
+<p>
+Si el server llega a exponer muchas tools, saturas el contexto del modelo. Laravel
+MCP permite mover tools a un catálogo buscable:
+</p>
+
+<pre>
+protected array $tools = [
+    CurrentWeatherTool::class,
+
+    ToolSearch::class =&gt; [
+        HistoricalWeatherTool::class,
+        WeatherAlertsTool::class,
+    ],
+];
+</pre>
+
+<p>
+El cliente expone solo <code>search_tools</code> y <code>execute_tools</code>, y
+el modelo busca lo que necesita. Se controla con
+<code>mcp.tool_search.max_tool_calls</code> y
+<code>mcp.tool_search.max_output_bytes</code>.
+</p>
+
+<h3>6.5 Otras capacidades del paquete que no se usaron aquí</h3>
+
+<ul>
+  <li><strong>Registro condicional</strong>: implementa <code>shouldRegister()</code>
+      en la tool para ocultarla según el usuario o el estado.</li>
+  <li><strong>Inyección de dependencias</strong>: el contenedor de Laravel resuelve
+      el constructor de la tool, así que puedes tipar repositorios o servicios
+      directamente. También vale en <code>handle()</code>.</li>
+  <li><strong>Notificaciones</strong>:
+      <code>Response::notification('progreso', [...])</code> para reportar avance
+      en tareas largas.</li>
+  <li><strong>Metadata</strong>: <code>-&gt;withMeta([...])</code> en la respuesta,
+      o propiedad <code>$meta</code> en la clase.</li>
+  <li><strong>Iconos</strong>: atributo <code>#[Icon]</code> en server, tools,
+      resources y prompts.</li>
+  <li><strong>MCP Apps</strong>: <code>php artisan make:mcp-app-resource</code>
+      genera HTML interactivo en un iframe sandboxed. Es lo interesante para
+      dashboards.</li>
+  <li><strong>Cliente MCP como fuente de tools para laravel/ai</strong>: este
+      proyecto ya tiene <code>laravel/ai</code>, así que se puede consumir un MCP
+      externo (GitHub, Linear, etc.) y que el agente use esas tools.</li>
+</ul>
+
+<h3>6.6 Detalles verificados durante la implementación</h3>
+
+<ul>
+  <li><code>Response::structured()</code> devuelve <code>ResponseFactory</code>, no
+      <code>Response</code>. El tipo de retorno debe ser
+      <code>Response|ResponseFactory</code>.</li>
+  <li>El nombre de la tool en el protocolo se deriva de la clase:
+      <code>ListPostsTool</code> &rarr; <code>list-posts-tool</code>.</li>
+  <li><code>routes/ai.php</code> se carga solo, sin tocar
+      <code>bootstrap/app.php</code>.</li>
+  <li>Las rutas del server web aparecen en
+      <code>php artisan route:list --path=mcp</code>.</li>
+  <li><code>php artisan mcp:inspector posts</code> y
+      <code>php artisan mcp:start posts</code> funcionan con el server local.</li>
+  <li>No existe un modelo <code>App\Models\Category</code> en el proyecto (la
+      tabla sí existe), así que el test inserta la categoría con
+      <code>DB::table('categories')</code>.</li>
+  <li>Formato validado con <code>vendor/bin/pint --dirty --format agent</code>.</li>
+</ul>
+
+<hr>
+
+<h2>7. Resumen</h2>
+
+<ol>
+  <li>Un <strong>Server</strong> es el contenedor: registra tools, resources y prompts.</li>
+  <li>Una <strong>Tool</strong> ejecuta acciones. Su <code>#[Description]</code>
+      decide si el modelo la usa; su <code>schema()</code> define los argumentos.</li>
+  <li>Un <strong>Resource</strong> expone datos de solo lectura bajo una URI.</li>
+  <li>Un <strong>Prompt</strong> es una plantilla reutilizable con argumentos.</li>
+  <li>Se registra con <code>Mcp::web()</code> (HTTP) o <code>Mcp::local()</code>
+      (comando Artisan) en <code>routes/ai.php</code>.</li>
+  <li>Se depura con <code>php artisan mcp:inspector</code> y se prueba con
+      <code>PostServer::tool(...)-&gt;assertOk()</code>.</li>
+</ol>
+
+<p>
+Fecha del documento: 8 de octubre de 2026.
+</p>
+
+</body>
+</html>

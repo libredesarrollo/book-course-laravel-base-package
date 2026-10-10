@@ -9,6 +9,21 @@
                 "artisan",
                 "boost:mcp"
             ]
+        },
+        "laravel-posts": {
+            "type": "local",
+            "enabled": true,
+            "command": [
+                "php",
+                "artisan",
+                "mcp:start",
+                "posts"
+            ]
+        },
+        "laravel-posts-http": {
+            "type": "remote",
+            "enabled": false,
+            "url": "http://larapackage.test/mcp/posts"
         }
     }
 }
